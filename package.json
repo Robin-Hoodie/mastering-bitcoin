@@ -1,0 +1,19 @@
+{
+  "name": "mastering-bitcoin-book",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "license": "MIT",
+  "dependencies": {
+    "bitcoinjs-lib": "^6.0.0",
+    "bs58check": "^2.1.2",
+    "ecpair": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/bs58check": "^2.1.0",
+    "nodemon": "^2.0.15"
+  },
+  "scripts": {
+    "dev": "nodemon index.js"
+  }
+}
