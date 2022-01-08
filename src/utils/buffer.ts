@@ -5,9 +5,12 @@ export const bufferToBitArray = (buffer: Buffer) =>
     .split("");
 
 export const addBuffers = (bufferOne: Buffer, bufferTwo: Buffer) => {
+  console.log("bufferOne", bufferOne.toString("hex"));
+  console.log("bufferTwo", bufferTwo.toString("hex"));
   const sum = Number(bufferOne.toString()) + Number(bufferTwo.toString());
-  console.log("sum", sum);
   const sumAsBuffer = Buffer.alloc(32);
   sumAsBuffer.write(sum.toString());
   return sumAsBuffer;
 };
+
+export const bufferAsHex = (buffer: Buffer) => buffer.toString("hex");

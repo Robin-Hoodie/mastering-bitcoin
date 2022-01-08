@@ -1,69 +1,48 @@
 import { sha512 } from "../utils/hash";
-import { addBuffers } from "../utils/buffer";
+import { logMasterKeys } from "./log";
 import { ECPair } from "ecpair";
-import bs58check from "bs58check";
+import {
+  deriveChildKeysPrivateAndPublicNormal,
+  toMasterPrivateKeyExtended,
+  toMasterPublicKeyExtended,
+} from "./extended-key";
 
 // See https://learnmeabitcoin.com/technical/extended-keys for more info
 
-const MAX_INDEX_NUMBER = Math.pow(2, 32);
-
 export const seedToMasterKeysAndChainCode = (seed: Buffer) => {
-  const seedHash = sha512(seed);
   const {
     privateKey: masterPrivateKey,
     publicKey: masterPublicKey,
     chainCode: masterChainCode,
-  } = privateKeyPublicKeyAndChainCode(seedHash);
-  const extendedPrivateKey = toExtendedPrivateKey(
+  } = privateKeyPublicKeyAndChainCode(seed);
+  const masterPrivateKeyExtended = toMasterPrivateKeyExtended(
     masterPrivateKey,
     masterChainCode
   );
-  const extendedPublicKey = toExtendedPublicKey(
+  const masterPublicKeyExtended = toMasterPublicKeyExtended(
     masterPublicKey,
     masterChainCode
   );
-  return {
+  logMasterKeys(
     masterPrivateKey,
     masterPublicKey,
     masterChainCode,
-    extendedPrivateKey,
-    extendedPublicKey,
-  };
-};
-
-const toExtendedPrivateKey = (privateKey: Buffer, chainCode: Buffer) =>
-  toExtendedKey(privateKey, chainCode, Buffer.alloc(4, 0x0488ade4));
-
-const toExtendedPublicKey = (publicKey: Buffer, chainCode: Buffer) =>
-  toExtendedKey(publicKey, chainCode, Buffer.alloc(4, 0x0488b21e));
-
-//
-const toExtendedKey = (key: Buffer, chainCode: Buffer, prefix: Buffer) =>
-  bs58check.encode(Buffer.concat([prefix, key, chainCode]));
-
-const deriveChildKey = (
-  privateKey: Buffer,
-  publicKey: Buffer,
-  chainCode: Buffer,
-  index: number
-) => {
-  const hash = sha512(
-    Buffer.concat([publicKey, chainCode, Buffer.from(index.toString())])
+    masterPrivateKeyExtended,
+    masterPublicKeyExtended
   );
-  return privateKeyPublicKeyAndChainCode(hash, privateKey);
+  deriveChildKeysPrivateAndPublicNormal(
+    masterPublicKey,
+    masterPrivateKey,
+    masterChainCode,
+    0
+  );
 };
 
-const privateKeyPublicKeyAndChainCode = (
-  hash: Buffer,
-  parentPrivateKey?: Buffer
-) => {
+const privateKeyPublicKeyAndChainCode = (seed: Buffer) => {
+  const hash = sha512(seed);
   const hashMiddleIndex = hash.length / 2;
-  const hashFirstHalf = hash.slice(0, hashMiddleIndex);
-  const hashSecondHalf = hash.slice(hashMiddleIndex);
-  const privateKey = parentPrivateKey
-    ? addBuffers(hashFirstHalf, parentPrivateKey)
-    : hashFirstHalf;
-  const chainCode = hashSecondHalf;
+  const privateKey = hash.slice(0, hashMiddleIndex);
+  const chainCode = hash.slice(hashMiddleIndex);
   const { publicKey } = ECPair.fromPrivateKey(privateKey);
   return {
     privateKey,
