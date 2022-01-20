@@ -6,6 +6,7 @@ import {
   toMasterPrivateKeyExtended,
   toMasterPublicKeyExtended,
 } from "./extended-key";
+import bs58check from "bs58check";
 
 // See https://learnmeabitcoin.com/technical/extended-keys for more info
 
